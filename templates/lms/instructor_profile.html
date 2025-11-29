@@ -1,0 +1,221 @@
+{% extends 'lms/base.html' %}
+
+{% block title %}{{ instructor.get_full_name|default:instructor.username }}'s Profile{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'home' %}">Home</a>
+    <span class="breadcrumb-separator">›</span>
+    <a href="{% url 'dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator">›</span>
+    <span class="breadcrumb-current">Profile</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="profile-header">
+        <div class="profile-avatar">
+            {% if instructor.profile_picture %}
+                <img src="{{ instructor.profile_picture.url }}" alt="{{ instructor.username }}">
+            {% else %}
+                <div class="avatar-placeholder instructor">{{ instructor.username.0|upper }}</div>
+            {% endif %}
+        </div>
+        <div class="profile-info">
+            <h1>{{ instructor.get_full_name|default:instructor.username }}</h1>
+            <p class="profile-role">👨‍🏫 Instructor</p>
+            {% if instructor.bio %}
+                <p class="profile-bio">{{ instructor.bio }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">📚</div>
+            <div class="stat-value">{{ profile.total_courses_created }}</div>
+            <div class="stat-label">Courses Created</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-value">{{ profile.total_students }}</div>
+            <div class="stat-label">Total Students</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🏆</div>
+            <div class="stat-value">{{ profile.total_badges_awarded }}</div>
+            <div class="stat-label">Badges Awarded</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">⭐</div>
+            <div class="stat-value">{{ profile.rating|floatformat:1 }}</div>
+            <div class="stat-label">Rating</div>
+        </div>
+    </div>
+
+    <!-- Created Courses -->
+    <section class="profile-section">
+        <h2>📚 Created Courses</h2>
+        <div class="card-grid">
+            {% for course in courses %}
+                <div class="card">
+                    <div class="course-header">
+                        <span class="course-badge">{{ course.enrollments.count }} Students</span>
+                        {% if course.is_published %}
+                            <span class="badge badge-success">Published</span>
+                        {% else %}
+                            <span class="badge badge-warning">Draft</span>
+                        {% endif %}
+                    </div>
+                    <h3>{{ course.title }}</h3>
+                    <p>{{ course.description|truncatewords:20 }}</p>
+                    <div class="card-actions">
+                        <a href="{% url 'course_detail' course.id %}" class="btn btn-primary btn-sm">View Course</a>
+                        <a href="{% url 'course_edit' course.id %}" class="btn btn-secondary btn-sm">Edit</a>
+                    </div>
+                </div>
+            {% empty %}
+                <p>No courses created yet.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Students -->
+    <section class="profile-section">
+        <h2>👥 Students</h2>
+        <div class="student-grid">
+            {% for student in students %}
+                <div class="student-card">
+                    <div class="student-avatar">
+                        {% if student.profile_picture %}
+                            <img src="{{ student.profile_picture.url }}" alt="{{ student.username }}">
+                        {% else %}
+                            <div class="avatar-small">{{ student.username.0|upper }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="student-info">
+                        <h4>{{ student.get_full_name|default:student.username }}</h4>
+                        <p>Enrolled student</p>
+                    </div>
+                    <a href="{% url 'student_profile_view' student.id %}" class="btn btn-sm btn-secondary">View Profile</a>
+                </div>
+            {% empty %}
+                <p>No students yet.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Badges Awarded by Instructor -->
+    <section class="profile-section">
+        <h2>🏆 Badges Awarded by Me</h2>
+        <div class="awarded-badges-list">
+            {% for student_badge in awarded_badges %}
+                <div class="awarded-badge-item">
+                    <div class="badge-icon-medium">{{ student_badge.badge.icon }}</div>
+                    <div class="awarded-badge-details">
+                        <h4>{{ student_badge.badge.name }}</h4>
+                        <p>Awarded to: <strong>{{ student_badge.student.get_full_name|default:student_badge.student.username }}</strong></p>
+                        <p>Course: {{ student_badge.course.title }}</p>
+                        {% if student_badge.note %}
+                            <p class="badge-note">💬 {{ student_badge.note }}</p>
+                        {% endif %}
+                        <small>{{ student_badge.awarded_at|date:"M d, Y H:i" }}</small>
+                    </div>
+                </div>
+            {% empty %}
+                <p>No badges awarded yet. Award badges to recognize student achievements!</p>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+
+<style>
+.avatar-placeholder.instructor {
+    background: var(--accent-color);
+}
+
+.student-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.student-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+
+.student-avatar img,
+.avatar-small {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.avatar-small {
+    background: var(--primary-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.student-info {
+    flex: 1;
+}
+
+.student-info h4 {
+    margin-bottom: 0.25rem;
+}
+
+.student-info p {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.awarded-badges-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.awarded-badge-item {
+    display: flex;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    border-left: 4px solid var(--accent-color);
+}
+
+.badge-icon-medium {
+    font-size: 3rem;
+    flex-shrink: 0;
+}
+
+.awarded-badge-details h4 {
+    margin-bottom: 0.5rem;
+}
+
+.awarded-badge-details p {
+    margin-bottom: 0.25rem;
+    color: var(--text-secondary);
+}
+
+.awarded-badge-details small {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+</style>
+{% endblock %}

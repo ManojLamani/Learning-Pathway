@@ -1,0 +1,42 @@
+{% extends 'lms/base.html' %}
+
+{% block title %}Submit Assignment - Learning Pathway LMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="form-container">
+        <div class="form-card">
+            <h2>Submit Assignment: {{ assignment.title }}</h2>
+            <form method="post" enctype="multipart/form-data" id="submission-form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="{{ form.text_answer.id_for_label }}">Your Answer</label>
+                    {{ form.text_answer }}
+                    {% if form.text_answer.errors %}
+                        <div class="alert alert-error">{{ form.text_answer.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.file_submission.id_for_label }}">File Submission</label>
+                    {{ form.file_submission }}
+                    {% if form.file_submission.errors %}
+                        <div class="alert alert-error">{{ form.file_submission.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <button type="submit" class="btn btn-primary" onclick="validateForm('submission-form')">Submit Assignment</button>
+                <a href="{% url 'assignment_detail' assignment.id %}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        validateForm('submission-form');
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends 'lms/base.html' %}
+
+{% block title %}{% if course %}Edit Course{% else %}Create Course{% endif %} - Learning Pathway LMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="form-container">
+        <div class="form-card">
+            <h2>{% if course %}Edit Course{% else %}Create New Course{% endif %}</h2>
+            <form method="post" enctype="multipart/form-data" id="course-form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="{{ form.title.id_for_label }}">Title *</label>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                        <div class="alert alert-error">{{ form.title.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.description.id_for_label }}">Description *</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                        <div class="alert alert-error">{{ form.description.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.thumbnail.id_for_label }}">Thumbnail Image</label>
+                    {{ form.thumbnail }}
+                    {% if form.thumbnail.errors %}
+                        <div class="alert alert-error">{{ form.thumbnail.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        {{ form.is_published }} Publish this course
+                    </label>
+                    {% if form.is_published.errors %}
+                        <div class="alert alert-error">{{ form.is_published.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <button type="submit" class="btn btn-primary" onclick="validateForm('course-form')">{% if course %}Update Course{% else %}Create Course{% endif %}</button>
+                <a href="{% if course %}{% url 'course_detail' course.id %}{% else %}{% url 'course_list' %}{% endif %}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        validateForm('course-form');
+    });
+</script>
+{% endblock %}

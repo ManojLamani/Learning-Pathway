@@ -1,0 +1,66 @@
+{% extends 'lms/base.html' %}
+
+{% block title %}{% if assignment %}Edit Assignment{% else %}Create Assignment{% endif %} - Learning Pathway LMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="form-container">
+        <div class="form-card">
+            <h2>{% if assignment %}Edit Assignment{% else %}Create New Assignment{% endif %}</h2>
+            <form method="post" enctype="multipart/form-data" id="assignment-form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="{{ form.title.id_for_label }}">Title *</label>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                        <div class="alert alert-error">{{ form.title.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.description.id_for_label }}">Description *</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                        <div class="alert alert-error">{{ form.description.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.attachment.id_for_label }}">Attachment</label>
+                    {{ form.attachment }}
+                    {% if form.attachment.errors %}
+                        <div class="alert alert-error">{{ form.attachment.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.due_date.id_for_label }}">Due Date *</label>
+                    {{ form.due_date }}
+                    {% if form.due_date.errors %}
+                        <div class="alert alert-error">{{ form.due_date.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.max_marks.id_for_label }}">Maximum Marks *</label>
+                    {{ form.max_marks }}
+                    {% if form.max_marks.errors %}
+                        <div class="alert alert-error">{{ form.max_marks.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <button type="submit" class="btn btn-primary" onclick="validateForm('assignment-form')">{% if assignment %}Update Assignment{% else %}Create Assignment{% endif %}</button>
+                <a href="{% if assignment %}{% url 'assignment_detail' assignment.id %}{% else %}{% url 'course_detail' course.id %}{% endif %}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        validateForm('assignment-form');
+    });
+</script>
+{% endblock %}

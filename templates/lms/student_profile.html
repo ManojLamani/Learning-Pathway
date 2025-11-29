@@ -1,0 +1,314 @@
+{% extends 'lms/base.html' %}
+
+{% block title %}{{ student.get_full_name|default:student.username }}'s Profile{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'home' %}">Home</a>
+    <span class="breadcrumb-separator">›</span>
+    <a href="{% url 'dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator">›</span>
+    <span class="breadcrumb-current">Profile</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="profile-header">
+        <div class="profile-avatar">
+            {% if student.profile_picture %}
+                <img src="{{ student.profile_picture.url }}" alt="{{ student.username }}">
+            {% else %}
+                <div class="avatar-placeholder">{{ student.username.0|upper }}</div>
+            {% endif %}
+        </div>
+        <div class="profile-info">
+            <h1>{{ student.get_full_name|default:student.username }}</h1>
+            <p class="profile-role">🎓 Student</p>
+            {% if student.bio %}
+                <p class="profile-bio">{{ student.bio }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">📚</div>
+            <div class="stat-value">{{ profile.total_courses_enrolled }}</div>
+            <div class="stat-label">Courses Enrolled</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-value">{{ profile.total_courses_completed }}</div>
+            <div class="stat-label">Courses Completed</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">📖</div>
+            <div class="stat-value">{{ profile.total_modules_completed }}</div>
+            <div class="stat-label">Modules Completed</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🏆</div>
+            <div class="stat-value">{{ profile.total_badges_earned }}</div>
+            <div class="stat-label">Badges Earned</div>
+        </div>
+    </div>
+
+    <!-- Enrolled Courses -->
+    <section class="profile-section">
+        <h2>📚 Enrolled Courses</h2>
+        <div class="card-grid">
+            {% for enrollment in enrollments %}
+                <div class="card">
+                    <h3>{{ enrollment.course.title }}</h3>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: {{ enrollment.progress }}%"></div>
+                    </div>
+                    <p class="progress-text">{{ enrollment.progress|floatformat:0 }}% Complete</p>
+                    <a href="{% url 'course_detail' enrollment.course.id %}" class="btn btn-primary btn-sm">Continue</a>
+                </div>
+            {% empty %}
+                <p>No courses enrolled yet.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Completed Modules -->
+    <section class="profile-section">
+        <h2>✅ Completed Modules</h2>
+        <div class="module-list">
+            {% for progress in completed_modules %}
+                <div class="module-item completed">
+                    <div class="module-icon">✓</div>
+                    <div class="module-details">
+                        <h4>{{ progress.module.title }}</h4>
+                        <p>{{ progress.module.course.title }}</p>
+                        <small>Completed: {{ progress.completed_at|date:"M d, Y" }}</small>
+                    </div>
+                </div>
+            {% empty %}
+                <p>No modules completed yet.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Earned Badges -->
+    <section class="profile-section">
+        <h2>🏆 Earned Badges</h2>
+        <div class="badge-grid">
+            {% for student_badge in earned_badges %}
+                <div class="badge-card {% if student_badge.is_instructor_awarded %}instructor-awarded{% endif %}">
+                    <div class="badge-icon-large">{{ student_badge.badge.icon }}</div>
+                    <h4>{{ student_badge.badge.name }}</h4>
+                    <p class="badge-description">{{ student_badge.badge.description }}</p>
+                    <div class="badge-meta">
+                        <small>{{ student_badge.awarded_at|date:"M d, Y" }}</small>
+                        {% if student_badge.is_instructor_awarded %}
+                            <span class="badge-type">👨‍🏫 Instructor Awarded</span>
+                            {% if student_badge.awarded_by %}
+                                <small>By: {{ student_badge.awarded_by.get_full_name|default:student_badge.awarded_by.username }}</small>
+                            {% endif %}
+                            {% if student_badge.note %}
+                                <p class="badge-note">💬 {{ student_badge.note }}</p>
+                            {% endif %}
+                        {% else %}
+                            <span class="badge-type">🤖 Auto Awarded</span>
+                        {% endif %}
+                    </div>
+                </div>
+            {% empty %}
+                <p>No badges earned yet. Complete modules to earn badges!</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Lesson Progress -->
+    <section class="profile-section">
+        <h2>📊 Learning Progress</h2>
+        <div class="progress-stats">
+            <div class="progress-stat">
+                <div class="progress-circle">
+                    <svg viewBox="0 0 36 36" class="circular-chart">
+                        <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                        <path class="circle" stroke-dasharray="{{ completed_lessons|default:0 }}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                        <text x="18" y="20.35" class="percentage">{{ completed_lessons }}</text>
+                    </svg>
+                </div>
+                <p>Lessons Completed</p>
+            </div>
+        </div>
+    </section>
+</div>
+
+<style>
+.profile-header {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+    margin-bottom: 3rem;
+    padding: 2rem;
+    background: var(--bg-card);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.profile-avatar img,
+.avatar-placeholder {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.avatar-placeholder {
+    background: var(--primary-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    font-weight: bold;
+}
+
+.profile-info h1 {
+    margin-bottom: 0.5rem;
+}
+
+.profile-role {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+.profile-bio {
+    color: var(--text-muted);
+    max-width: 600px;
+}
+
+.profile-section {
+    margin-top: 3rem;
+}
+
+.profile-section h2 {
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+}
+
+.progress-bar-container {
+    background: var(--bg-secondary);
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 1rem 0 0.5rem 0;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+}
+
+.module-item {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+}
+
+.module-item.completed {
+    border-left: 4px solid var(--success-color);
+}
+
+.module-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--success-color);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.module-details h4 {
+    margin-bottom: 0.25rem;
+}
+
+.module-details p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+.module-details small {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.badge-card {
+    background: var(--bg-card);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.badge-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary-color);
+}
+
+.badge-card.instructor-awarded {
+    border-color: var(--accent-color);
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.05), rgba(99, 102, 241, 0.05));
+}
+
+.badge-icon-large {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.badge-description {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin: 0.5rem 0;
+}
+
+.badge-meta {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.badge-type {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+}
+
+.badge-note {
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-style: italic;
+}
+</style>
+{% endblock %}

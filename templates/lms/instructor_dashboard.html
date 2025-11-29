@@ -1,0 +1,50 @@
+{% extends 'lms/base.html' %}
+
+{% block title %}Instructor Dashboard - Learning Pathway LMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="dashboard-header">
+        <h1>Instructor Dashboard</h1>
+        <div class="dashboard-actions">
+            <a href="{% url 'course_create' %}" class="btn btn-primary">Create New Course</a>
+            <a href="{% url 'instructor_profile' %}" class="btn btn-secondary">View Profile</a>
+            <a href="{% url 'course_list' %}" class="btn btn-secondary">My Courses</a>
+        </div>
+    </div>
+    
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>Total Courses</h3>
+            <div class="stat-value">{{ courses.count }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Total Students</h3>
+            <div class="stat-value">{{ total_students }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Assignments</h3>
+            <div class="stat-value">{{ total_assignments }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Quizzes</h3>
+            <div class="stat-value">{{ total_quizzes }}</div>
+        </div>
+    </div>
+    
+    <h2>Your Courses</h2>
+    <div class="card-grid">
+        {% for course in courses %}
+            <div class="card">
+                <h3>{{ course.title }}</h3>
+                <p>{{ course.description|truncatewords:15 }}</p>
+                <div class="card-actions">
+                    <a href="{% url 'course_detail' course.id %}" class="btn btn-primary btn-sm">Manage</a>
+                </div>
+            </div>
+        {% empty %}
+            <p>You haven't created any courses yet. <a href="{% url 'course_create' %}">Create your first course</a></p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

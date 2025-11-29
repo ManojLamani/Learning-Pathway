@@ -1,0 +1,35 @@
+{% extends 'lms/base.html' %}
+
+{% block title %}{{ lesson.title }} - Learning Pathway LMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="dashboard-header">
+        <h1>{{ lesson.title }}</h1>
+        {% if user.role == 'instructor' and lesson.module.course.instructor == user %}
+            <div>
+                <a href="{% url 'lesson_edit' lesson.id %}" class="btn btn-secondary">Edit Lesson</a>
+                <a href="{% url 'lesson_delete' lesson.id %}" class="btn btn-danger" onclick="return confirmDelete()">Delete Lesson</a>
+            </div>
+        {% endif %}
+    </div>
+    
+    <div class="card mb-4">
+        <p><strong>Module:</strong> <a href="{% url 'course_detail' lesson.module.course.id %}">{{ lesson.module.title }}</a></p>
+        <p><strong>Course:</strong> {{ lesson.module.course.title }}</p>
+    </div>
+    
+    <div class="card">
+        <div class="lesson-content">
+            {{ lesson.content|linebreaks }}
+        </div>
+        
+        {% if lesson.video_url %}
+            <div class="mt-4">
+                <h3>Video Resource</h3>
+                <a href="{{ lesson.video_url }}" target="_blank" class="btn btn-primary">Watch Video</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends 'lms/base.html' %}
+
+{% block title %}{% if question %}Edit Question{% else %}Add Question{% endif %} - Learning Pathway LMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="form-container">
+        <div class="form-card">
+            <h2>{% if question %}Edit Question{% else %}Add New Question{% endif %}</h2>
+            <h3>Quiz: {{ quiz.title }}</h3>
+            
+            <form method="post" id="question-form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="{{ form.question_text.id_for_label }}">Question Text *</label>
+                    {{ form.question_text }}
+                    {% if form.question_text.errors %}
+                        <div class="alert alert-error">{{ form.question_text.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.option_a.id_for_label }}">Option A *</label>
+                    {{ form.option_a }}
+                    {% if form.option_a.errors %}
+                        <div class="alert alert-error">{{ form.option_a.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.option_b.id_for_label }}">Option B *</label>
+                    {{ form.option_b }}
+                    {% if form.option_b.errors %}
+                        <div class="alert alert-error">{{ form.option_b.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.option_c.id_for_label }}">Option C *</label>
+                    {{ form.option_c }}
+                    {% if form.option_c.errors %}
+                        <div class="alert alert-error">{{ form.option_c.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.option_d.id_for_label }}">Option D *</label>
+                    {{ form.option_d }}
+                    {% if form.option_d.errors %}
+                        <div class="alert alert-error">{{ form.option_d.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.correct_answer.id_for_label }}">Correct Answer *</label>
+                    {{ form.correct_answer }}
+                    {% if form.correct_answer.errors %}
+                        <div class="alert alert-error">{{ form.correct_answer.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.marks.id_for_label }}">Marks *</label>
+                    {{ form.marks }}
+                    {% if form.marks.errors %}
+                        <div class="alert alert-error">{{ form.marks.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.order.id_for_label }}">Question Order</label>
+                    {{ form.order }}
+                    {% if form.order.errors %}
+                        <div class="alert alert-error">{{ form.order.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <button type="submit" class="btn btn-primary" onclick="validateForm('question-form')">{% if question %}Update Question{% else %}Add Question{% endif %}</button>
+                <a href="{% url 'quiz_detail' quiz.id %}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        validateForm('question-form');
+    });
+</script>
+{% endblock %}

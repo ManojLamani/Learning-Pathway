@@ -1,0 +1,141 @@
+{% extends 'lms/base.html' %}
+
+{% block title %}Learning Pathway - Learn smarter. Teach faster. Together.{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <div class="hero-content">
+        <h1>Learn smarter. Teach faster. Together.</h1>
+        <p>Manage courses, publish assignments, and deliver engaging learning experiences — all in one simple, modern platform.</p>
+        <div class="hero-buttons">
+            {% if user.is_authenticated %}
+                <a href="{% url 'dashboard' %}" class="btn btn-primary">Go to Dashboard</a>
+            {% else %}
+                <a href="{% url 'register' %}" class="btn btn-primary">Get Started</a>
+                <a href="{% url 'login' %}" class="btn btn-secondary">Sign in</a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="hero-image">
+        <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Students Learning Together">
+    </div>
+</div>
+
+<div class="features-section">
+    <div class="container">
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">📚</div>
+                <h3>Interactive Courses</h3>
+                <p>Create and manage engaging courses with multimedia content</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📝</div>
+                <h3>Smart Assignments</h3>
+                <p>Publish and grade assignments with ease</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🌙</div>
+                <h3>Dark Mode</h3>
+                <p>Study comfortably with our beautiful dark theme</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <h2 class="section-title">Featured Courses</h2>
+    <div class="card-grid">
+        {% for course in courses %}
+            <div class="card course-card">
+                <div class="course-header">
+                    <span class="course-badge">{{ course.modules.count }} Modules</span>
+                </div>
+                <h3 class="course-title">{{ course.title }}</h3>
+                <p class="course-description">{{ course.description|truncatewords:20 }}</p>
+                <div class="card-actions">
+                    <a href="{% url 'course_detail' course.id %}" class="btn btn-primary btn-sm">View Course</a>
+                </div>
+            </div>
+        {% empty %}
+            <div class="empty-state">
+                <p>No courses available yet. Check back soon!</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+.features-section {
+    background-color: var(--bg-secondary);
+    padding: 4rem 0;
+    margin: 4rem 0;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.feature-card {
+    background-color: var(--bg-card);
+    padding: 2rem;
+    border-radius: 16px;
+    text-align: center;
+    border: 1px solid var(--border-color);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.feature-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.feature-card h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    color: var(--text-primary);
+}
+
+.feature-card p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.section-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    color: var(--text-primary);
+}
+
+.course-header {
+    margin-bottom: 1rem;
+}
+
+.course-badge {
+    display: inline-block;
+    padding: 0.375rem 0.875rem;
+    background-color: rgba(99, 102, 241, 0.1);
+    color: var(--primary-color);
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-muted);
+}
+</style>
+{% endblock %}

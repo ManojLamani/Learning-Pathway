@@ -1,0 +1,21 @@
+{% extends 'lms/base.html' %}
+
+{% block title %}Delete Course - Learning Pathway LMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="form-container">
+        <div class="form-card">
+            <h2>Delete Course</h2>
+            <p>Are you sure you want to delete the course "<strong>{{ course.title }}</strong>"?</p>
+            <p>This action cannot be undone and will permanently delete all modules, lessons, assignments, and quizzes associated with this course.</p>
+            
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Yes, Delete Course</button>
+                <a href="{% url 'course_detail' course.id %}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

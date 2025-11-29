@@ -1,0 +1,165 @@
+{% extends 'lms/base.html' %}
+
+{% block title %}Student Dashboard - Learning Pathway LMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="dashboard-header">
+        <h1>Welcome, {{ user.first_name|default:user.username }}!</h1>
+        <div class="dashboard-actions">
+            <a href="{% url 'course_list' %}" class="btn btn-primary">Browse Courses</a>
+            <a href="{% url 'student_profile' %}" class="btn btn-secondary">View Profile</a>
+            <a href="{% url 'progress_dashboard' %}" class="btn btn-secondary">My Progress</a>
+        </div>
+    </div>
+    
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>Enrolled Courses</h3>
+            <div class="stat-value">{{ total_enrollments }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Assignments</h3>
+            <div class="stat-value">{{ total_assignments }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Quizzes</h3>
+            <div class="stat-value">{{ total_quizzes }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Badges Earned</h3>
+            <div class="stat-value">{{ earned_badges.count }}</div>
+        </div>
+    </div>
+    
+    <!-- Enrolled Courses -->
+    <h2 class="section-title">Your Enrolled Courses</h2>
+    <div class="card-grid">
+        {% for enrollment in enrollments %}
+            <div class="card course-card">
+                <div class="course-header">
+                    <span class="course-badge">{{ enrollment.course.modules.count }} Modules</span>
+                </div>
+                <h3 class="course-title">{{ enrollment.course.title }}</h3>
+                <p class="course-description">{{ enrollment.course.description|truncatewords:15 }}</p>
+                <div style="margin: 1rem 0;">
+                    <div style="background-color: var(--bg-secondary); border-radius: 10px; height: 8px; overflow: hidden;">
+                        <div style="background: linear-gradient(90deg, var(--primary-color), var(--accent-color)); height: 100%; width: {{ enrollment.progress }}%;"></div>
+                    </div>
+                    <small style="color: var(--text-muted);">Progress: {{ enrollment.progress }}%</small>
+                </div>
+                <div class="card-actions">
+                    <a href="{% url 'course_detail' enrollment.course.id %}" class="btn btn-primary btn-sm">Continue Learning</a>
+                </div>
+            </div>
+        {% empty %}
+            <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 3rem; background-color: var(--bg-secondary); border-radius: 12px;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📚</div>
+                <h3>No Enrolled Courses Yet</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Start your learning journey by enrolling in a course below!</p>
+                <a href="{% url 'course_list' %}" class="btn btn-primary">Browse All Courses</a>
+            </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Available Courses -->
+    {% if available_courses %}
+    <h2 class="section-title" style="margin-top: 3rem;">Available Courses</h2>
+    <div class="card-grid">
+        {% for course in available_courses %}
+            <div class="card course-card">
+                <div class="course-header">
+                    <span class="course-badge">{{ course.modules.count }} Modules</span>
+                </div>
+                <h3 class="course-title">{{ course.title }}</h3>
+                <p class="course-description">{{ course.description|truncatewords:15 }}</p>
+                <p style="color: var(--text-muted); font-size: 0.875rem; margin-top: 0.5rem;">
+                    <strong>Instructor:</strong> {{ course.instructor.get_full_name|default:course.instructor.username }}
+                </p>
+                <div class="card-actions">
+                    <a href="{% url 'course_detail' course.id %}" class="btn btn-primary btn-sm">View Course</a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    <div style="text-align: center; margin-top: 2rem;">
+        <a href="{% url 'course_list' %}" class="btn btn-secondary">View All Courses</a>
+    </div>
+    {% endif %}
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+        <div>
+            <h2>Recent Assignments</h2>
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Assignment</th>
+                            <th>Course</th>
+                            <th>Due Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for assignment in recent_assignments %}
+                            <tr>
+                                <td>{{ assignment.title }}</td>
+                                <td>{{ assignment.course.title }}</td>
+                                <td>{{ assignment.due_date|date:"M d, Y" }}</td>
+                                <td><a href="{% url 'assignment_detail' assignment.id %}" class="btn btn-sm btn-primary">View</a></td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="4">No recent assignments</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div>
+            <h2>Recent Quizzes</h2>
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Quiz</th>
+                            <th>Course</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for quiz in recent_quizzes %}
+                            <tr>
+                                <td>{{ quiz.title }}</td>
+                                <td>{{ quiz.course.title }}</td>
+                                <td><a href="{% url 'quiz_detail' quiz.id %}" class="btn btn-sm btn-primary">Take Quiz</a></td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="3">No recent quizzes</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="mt-8">
+        <h2>Your Badges</h2>
+        <div class="badge-grid">
+            {% for badge in earned_badges %}
+                <div class="badge-item">
+                    <div class="badge-icon">{{ badge.badge.icon }}</div>
+                    <div class="badge-name">{{ badge.badge.name }}</div>
+                </div>
+            {% empty %}
+                <p>You haven't earned any badges yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

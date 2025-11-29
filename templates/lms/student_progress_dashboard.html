@@ -1,0 +1,330 @@
+{% extends 'lms/base.html' %}
+
+{% block title %}My Progress - Learning Pathway{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'home' %}">Home</a>
+    <span class="breadcrumb-separator">›</span>
+    <a href="{% url 'dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator">›</span>
+    <span class="breadcrumb-current">My Progress</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="dashboard-header">
+        <h1>📊 My Learning Progress</h1>
+        <div class="dashboard-actions">
+            <a href="{% url 'student_profile' %}" class="btn btn-secondary">View Profile</a>
+            <a href="{% url 'dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
+    </div>
+
+    <!-- Overall Statistics -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">📚</div>
+            <div class="stat-value">{{ profile.total_courses_enrolled }}</div>
+            <div class="stat-label">Courses Enrolled</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-value">{{ profile.total_courses_completed }}</div>
+            <div class="stat-label">Courses Completed</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">📖</div>
+            <div class="stat-value">{{ profile.total_modules_completed }}</div>
+            <div class="stat-label">Modules Completed</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🏆</div>
+            <div class="stat-value">{{ profile.total_badges_earned }}</div>
+            <div class="stat-label">Badges Earned</div>
+        </div>
+    </div>
+
+    <!-- Course Progress Details -->
+    <section class="progress-section">
+        <h2>📚 Course Progress</h2>
+        
+        {% for data in progress_data %}
+        <div class="course-progress-card">
+            <div class="course-progress-header">
+                <div>
+                    <h3>{{ data.enrollment.course.title }}</h3>
+                    <p>Enrolled: {{ data.enrollment.enrolled_at|date:"M d, Y" }}</p>
+                </div>
+                <div class="overall-progress">
+                    <div class="progress-circle-small">
+                        <span class="progress-percentage">{{ data.enrollment.progress|floatformat:0 }}%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Module Progress -->
+            <div class="module-progress-list">
+                <h4>Modules:</h4>
+                {% for item in data.module_progress %}
+                <div class="module-progress-item {% if item.progress.is_completed %}completed{% endif %}">
+                    <div class="module-progress-info">
+                        <div class="module-icon">
+                            {% if item.progress.is_completed %}
+                                ✓
+                            {% else %}
+                                📖
+                            {% endif %}
+                        </div>
+                        <div class="module-details">
+                            <h5>{{ item.module.title }}</h5>
+                            <p>{{ item.module.description|truncatewords:15 }}</p>
+                        </div>
+                    </div>
+                    <div class="module-progress-bar">
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: {{ item.progress.completion_percentage }}%"></div>
+                        </div>
+                        <span class="progress-text">{{ item.progress.completion_percentage|floatformat:0 }}%</span>
+                    </div>
+                    {% if item.progress.is_completed %}
+                        <div class="completion-badge">
+                            <span class="badge badge-success">✓ Completed</span>
+                            <small>{{ item.progress.completed_at|date:"M d, Y" }}</small>
+                        </div>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <p>No modules in this course yet.</p>
+                {% endfor %}
+            </div>
+
+            <div class="course-actions">
+                <a href="{% url 'course_detail' data.enrollment.course.id %}" class="btn btn-primary btn-sm">Continue Learning</a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">📚</div>
+            <h3>No Courses Yet</h3>
+            <p>Enroll in courses to start tracking your progress!</p>
+            <a href="{% url 'course_list' %}" class="btn btn-primary">Browse Courses</a>
+        </div>
+        {% endfor %}
+    </section>
+
+    <!-- Recent Badges -->
+    {% if recent_badges %}
+    <section class="progress-section">
+        <h2>🏆 Recent Badges</h2>
+        <div class="badge-grid">
+            {% for student_badge in recent_badges %}
+            <div class="badge-card-small">
+                <div class="badge-icon-medium">{{ student_badge.badge.icon }}</div>
+                <h4>{{ student_badge.badge.name }}</h4>
+                <small>{{ student_badge.awarded_at|date:"M d, Y" }}</small>
+                {% if student_badge.is_instructor_awarded %}
+                    <span class="badge-type-small">👨‍🏫 Instructor</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        <div style="text-align: center; margin-top: 1.5rem;">
+            <a href="{% url 'student_profile' %}" class="btn btn-secondary">View All Badges</a>
+        </div>
+    </section>
+    {% endif %}
+</div>
+
+<style>
+.progress-section {
+    margin-top: 3rem;
+}
+
+.progress-section h2 {
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+}
+
+.course-progress-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.course-progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.course-progress-header h3 {
+    margin-bottom: 0.5rem;
+}
+
+.course-progress-header p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.progress-circle-small {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.module-progress-list {
+    margin-top: 1.5rem;
+}
+
+.module-progress-list h4 {
+    margin-bottom: 1rem;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    text-transform: uppercase;
+}
+
+.module-progress-item {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.module-progress-item.completed {
+    border-left: 4px solid var(--success-color);
+    background: linear-gradient(90deg, rgba(16, 185, 129, 0.05), var(--bg-secondary));
+}
+
+.module-progress-info {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.module-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.module-progress-item.completed .module-icon {
+    background: var(--success-color);
+}
+
+.module-details h5 {
+    margin-bottom: 0.25rem;
+}
+
+.module-details p {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.module-progress-bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.module-progress-bar .progress-bar-container {
+    flex: 1;
+}
+
+.completion-badge {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.course-actions {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.badge-card-small {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+}
+
+.badge-card-small h4 {
+    font-size: 0.95rem;
+    margin: 0.5rem 0;
+}
+
+.badge-card-small small {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.badge-type-small {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    font-size: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+}
+
+.empty-state h3 {
+    margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .course-progress-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .module-progress-info {
+        flex-direction: column;
+    }
+    
+    .module-progress-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+</style>
+{% endblock %}

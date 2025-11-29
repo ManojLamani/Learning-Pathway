@@ -1,0 +1,132 @@
+{% extends 'lms/base.html' %}
+
+{% block title %}Sign up - Learning Pathway{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-left" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.95), rgba(139, 92, 246, 0.95)), url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'); background-size: cover; background-position: center;">
+        <div class="form-left-content">
+            <div class="feature-icon" style="font-size: 4rem; margin-bottom: 1.5rem;">📚</div>
+            <h2>Learn. Teach. Connect.</h2>
+            <p>Join Learning Pathway today and unlock a world of knowledge and collaboration.</p>
+        </div>
+    </div>
+    
+    <div class="form-right">
+        <div class="form-card">
+            <div class="form-header">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h2>Sign up</h2>
+                    <a href="{% url 'login' %}" style="color: var(--primary-color); text-decoration: none; font-size: 0.9rem; font-weight: 600;">Sign in</a>
+                </div>
+                <p>Create your Learning Pathway account</p>
+            </div>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+            
+            {% if form.non_field_errors %}
+                <div class="alert alert-error">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+            
+            <form method="post" id="register-form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="{{ form.role.id_for_label }}">I am a *</label>
+                    <select name="role" id="{{ form.role.id_for_label }}" required style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 1rem; background-color: white;">
+                        <option value="student">Student</option>
+                        <option value="instructor">Instructor</option>
+                    </select>
+                    {% if form.role.errors %}
+                        <div class="alert alert-error">{{ form.role.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.first_name.id_for_label }}">Full name</label>
+                    <input type="text" name="first_name" id="{{ form.first_name.id_for_label }}" placeholder="Your name" value="{{ form.first_name.value|default:'' }}">
+                    {% if form.first_name.errors %}
+                        <div class="alert alert-error">{{ form.first_name.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.email.id_for_label }}">Email *</label>
+                    <input type="email" name="email" id="{{ form.email.id_for_label }}" placeholder="your@example.com" value="{{ form.email.value|default:'' }}" required>
+                    {% if form.email.errors %}
+                        <div class="alert alert-error">{{ form.email.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.username.id_for_label }}">Username *</label>
+                    <input type="text" name="username" id="{{ form.username.id_for_label }}" placeholder="username" value="{{ form.username.value|default:'' }}" required>
+                    {% if form.username.errors %}
+                        <div class="alert alert-error">{{ form.username.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.password.id_for_label }}">Password *</label>
+                    <input type="password" name="password" id="{{ form.password.id_for_label }}" placeholder="At least 8 characters" required>
+                    {% if form.password.errors %}
+                        <div class="alert alert-error">{{ form.password.errors.0 }}</div>
+                    {% endif %}
+                    <ul class="password-requirements">
+                        <li>At least 8 characters</li>
+                        <li>Number (0-9) or symbol</li>
+                        <li>Lowercase and uppercase</li>
+                    </ul>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Create Account</button>
+            </form>
+            
+            <div class="form-footer">
+                <p>Already member? <a href="{% url 'login' %}">Sign in</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+body {
+    margin: 0;
+    padding: 0;
+}
+
+.navbar {
+    position: absolute;
+    width: 100%;
+    background-color: transparent;
+    border-bottom: none;
+}
+
+.password-requirements {
+    list-style: none;
+    padding: 0;
+}
+
+.password-requirements li::before {
+    content: '✓';
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: var(--success-color);
+    color: white;
+    font-size: 0.7rem;
+    text-align: center;
+    line-height: 16px;
+    margin-right: 0.5rem;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+{% endblock %}

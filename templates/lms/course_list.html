@@ -1,0 +1,67 @@
+{% extends 'lms/base.html' %}
+
+{% block title %}Courses - Learning Pathway LMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="dashboard-header">
+        <h1>{% if user.role == 'instructor' %}My Courses{% else %}Available Courses{% endif %}</h1>
+        {% if user.role == 'instructor' %}
+            <a href="{% url 'course_create' %}" class="btn btn-primary">Create New Course</a>
+        {% endif %}
+    </div>
+    
+    <div class="form-group mb-4">
+        <input type="text" id="course-search" class="form-input" placeholder="Search courses...">
+    </div>
+    
+    <div class="card-grid">
+        {% for course in courses %}
+            <div class="card course-card">
+                <div class="course-header">
+                    <span class="course-badge">{{ course.modules.count }} Modules</span>
+                    {% if user.role == 'student' %}
+                        {% if course.id in enrolled_course_ids %}
+                            <span class="badge badge-success" style="margin-left: 0.5rem;">Enrolled</span>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                <h3 class="course-title">{{ course.title }}</h3>
+                <p class="course-description">{{ course.description|truncatewords:20 }}</p>
+                <p style="color: var(--text-muted); font-size: 0.875rem; margin-top: 0.5rem;">
+                    <strong>Instructor:</strong> {{ course.instructor.get_full_name|default:course.instructor.username }}
+                </p>
+                <div class="card-actions">
+                    <a href="{% url 'course_detail' course.id %}" class="btn btn-primary btn-sm">
+                        {% if user.role == 'student' and course.id in enrolled_course_ids %}
+                            Continue Learning
+                        {% else %}
+                            View Details
+                        {% endif %}
+                    </a>
+                </div>
+            </div>
+        {% empty %}
+            <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 3rem; background-color: var(--bg-secondary); border-radius: 12px;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📚</div>
+                <h3>No Courses Available</h3>
+                <p style="color: var(--text-secondary);">
+                    {% if user.role == 'instructor' %}
+                        Get started by creating your first course!
+                    {% else %}
+                        Check back later for new courses.
+                    {% endif %}
+                </p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        filterCourses();
+    });
+</script>
+{% endblock %}

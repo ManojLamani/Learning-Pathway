@@ -1,0 +1,150 @@
+{% extends 'lms/base.html' %}
+
+{% block title %}{{ quiz.title }} - Learning Pathway LMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="dashboard-header">
+        <h1>{{ quiz.title }}</h1>
+        {% if user.role == 'instructor' and quiz.course.instructor == user %}
+            <div>
+                <a href="{% url 'quiz_edit' quiz.id %}" class="btn btn-secondary">Edit Quiz</a>
+                <a href="{% url 'quiz_delete' quiz.id %}" class="btn btn-danger" onclick="return confirmDelete()">Delete Quiz</a>
+                <a href="{% url 'question_create' quiz.id %}" class="btn btn-primary">Add Question</a>
+            </div>
+        {% endif %}
+    </div>
+    
+    <div class="card mb-4">
+        <p>{{ quiz.description }}</p>
+        <p><strong>Course:</strong> <a href="{% url 'course_detail' quiz.course.id %}">{{ quiz.course.title }}</a></p>
+        <p><strong>Duration:</strong> {{ quiz.duration_minutes }} minutes</p>
+        <p><strong>Maximum Marks:</strong> {{ quiz.max_marks }}</p>
+        <p><strong>Pass Marks:</strong> {{ quiz.pass_marks }}</p>
+    </div>
+    
+    {% if user.role == 'student' %}
+        <div class="card mb-4">
+            <h3>Your Attempts</h3>
+            {% if attempts %}
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Attempt Date</th>
+                                <th>Status</th>
+                                <th>Score</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for attempt in attempts %}
+                                <tr>
+                                    <td>{{ attempt.started_at|date:"M d, Y H:i" }}</td>
+                                    <td>
+                                        {% if attempt.is_completed %}
+                                            <span class="badge badge-success">Completed</span>
+                                        {% else %}
+                                            <span class="badge badge-warning">In Progress</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if attempt.is_completed %}
+                                            {{ attempt.score }}/{{ quiz.max_marks }}
+                                        {% else %}
+                                            Not scored
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if attempt.is_completed %}
+                                            <a href="{% url 'quiz_result' attempt.id %}" class="btn btn-sm btn-primary">View Result</a>
+                                        {% else %}
+                                            <a href="{% url 'quiz_attempt' attempt.id %}" class="btn btn-sm btn-primary">Continue</a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+            
+            {% if not attempts or attempts.last.is_completed %}
+                <a href="{% url 'quiz_take' quiz.id %}" class="btn btn-primary">Start Quiz</a>
+            {% endif %}
+        </div>
+    {% elif user.role == 'instructor' and quiz.course.instructor == user %}
+        {% if questions %}
+            <h2>Questions</h2>
+            {% for question in questions %}
+                <div class="quiz-question">
+                    <h4>Question {{ question.order }}</h4>
+                    <p>{{ question.question_text }}</p>
+                    <div class="quiz-options">
+                        <div class="quiz-option">A. {{ question.option_a }}</div>
+                        <div class="quiz-option">B. {{ question.option_b }}</div>
+                        <div class="quiz-option">C. {{ question.option_c }}</div>
+                        <div class="quiz-option">D. {{ question.option_d }}</div>
+                    </div>
+                    <p><strong>Correct Answer:</strong> {{ question.get_correct_answer_display }}</p>
+                    <p><strong>Marks:</strong> {{ question.marks }}</p>
+                    <div>
+                        <a href="{% url 'question_edit' question.id %}" class="btn btn-sm btn-secondary">Edit</a>
+                        <a href="{% url 'question_delete' question.id %}" class="btn btn-sm btn-danger" onclick="return confirmDelete()">Delete</a>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="card mb-4">
+                <p>No questions added yet. <a href="{% url 'question_create' quiz.id %}">Add your first question</a>.</p>
+            </div>
+        {% endif %}
+        
+        <h2>Student Attempts</h2>
+        {% if attempts %}
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Started At</th>
+                            <th>Status</th>
+                            <th>Score</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for attempt in attempts %}
+                            <tr>
+                                <td>{{ attempt.student.get_full_name|default:attempt.student.username }}</td>
+                                <td>{{ attempt.started_at|date:"M d, Y H:i" }}</td>
+                                <td>
+                                    {% if attempt.is_completed %}
+                                        <span class="badge badge-success">Completed</span>
+                                    {% else %}
+                                        <span class="badge badge-warning">In Progress</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if attempt.is_completed %}
+                                        {{ attempt.score }}/{{ quiz.max_marks }}
+                                    {% else %}
+                                        Not scored
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if attempt.is_completed %}
+                                        <a href="{% url 'quiz_result' attempt.id %}" class="btn btn-sm btn-primary">View Result</a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p>No attempts yet.</p>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

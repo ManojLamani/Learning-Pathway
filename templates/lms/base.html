@@ -1,0 +1,97 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Learning Pathway{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar">
+        <a href="{% url 'home' %}" class="navbar-brand">Learning Pathway</a>
+        <ul class="navbar-menu">
+            {% if user.is_authenticated %}
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="{% url 'course_list' %}">Courses</a></li>
+                <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                {% if user.role == 'instructor' %}
+                    <li><a href="{% url 'course_create' %}">Create Course</a></li>
+                {% endif %}
+                {% if user.role == 'student' %}
+                    <li><a href="{% url 'student_profile' %}">Profile</a></li>
+                    <li><a href="{% url 'progress_dashboard' %}">Progress</a></li>
+                {% else %}
+                    <li><a href="{% url 'instructor_profile' %}">Profile</a></li>
+                {% endif %}
+                <li><a href="{% url 'logout' %}">Logout</a></li>
+            {% else %}
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="{% url 'login' %}">Login</a></li>
+                <li><a href="{% url 'register' %}" class="btn btn-primary btn-sm">Signup</a></li>
+            {% endif %}
+            <li>
+                <div class="theme-selector">
+                    <button id="theme-toggle" class="theme-toggle" title="Change Theme">🎨</button>
+                    <div id="theme-dropdown" class="theme-dropdown">
+                        <button data-theme="light">☀️ Light</button>
+                        <button data-theme="dark">🌙 Dark</button>
+                        <button data-theme="ocean">🌊 Ocean</button>
+                        <button data-theme="forest">🌲 Forest</button>
+                        <button data-theme="sunset">🌅 Sunset</button>
+                    </div>
+                </div>
+            </li>
+        </ul>
+    </nav>
+
+    {% if messages %}
+        <div class="container">
+            <ul class="messages">
+                {% for message in messages %}
+                    <li class="alert alert-{% if message.tags == 'error' %}error{% elif message.tags == 'success' %}success{% else %}info{% endif %}">
+                        {{ message }}
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <main>
+        {% block back_button %}
+        {% if request.path != '/' and request.path != '/login/' and request.path != '/register/' %}
+        <div class="back-button-container">
+            <button onclick="goBack()" class="back-button" id="back-btn">
+                <span class="back-arrow">←</span> <span class="back-text">Back</span>
+            </button>
+            
+            {% block breadcrumbs %}
+            {% endblock %}
+        </div>
+        {% endif %}
+        {% endblock %}
+        
+        {% block content %}{% endblock %}
+    </main>
+    
+    <script>
+        function goBack() {
+            // Check if there's history to go back to
+            if (document.referrer && document.referrer !== window.location.href) {
+                window.history.back();
+            } else {
+                // If no history, go to home or dashboard
+                {% if user.is_authenticated %}
+                    window.location.href = "{% url 'dashboard' %}";
+                {% else %}
+                    window.location.href = "{% url 'home' %}";
+                {% endif %}
+            }
+        }
+    </script>
+
+    <script src="{% static 'js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

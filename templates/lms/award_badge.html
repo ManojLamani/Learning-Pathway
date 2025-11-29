@@ -1,0 +1,37 @@
+{% extends 'lms/base.html' %}
+
+{% block title %}Award Badge - Learning Pathway LMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="form-container">
+        <div class="form-card">
+            <h2>Award Badge</h2>
+            <h3>Student: {{ student.get_full_name|default:student.username }}</h3>
+            <h3>Course: {{ course.title }}</h3>
+            
+            <form method="post" id="badge-form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="{{ form.badge.id_for_label }}">Select Badge *</label>
+                    {{ form.badge }}
+                    {% if form.badge.errors %}
+                        <div class="alert alert-error">{{ form.badge.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <button type="submit" class="btn btn-primary" onclick="validateForm('badge-form')">Award Badge</button>
+                <a href="{% url 'course_detail' course.id %}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        validateForm('badge-form');
+    });
+</script>
+{% endblock %}

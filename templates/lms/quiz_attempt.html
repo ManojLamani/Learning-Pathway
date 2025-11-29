@@ -1,0 +1,62 @@
+{% extends 'lms/base.html' %}
+
+{% block title %}Quiz Attempt - Learning Pathway LMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="dashboard-header">
+        <h1>{{ attempt.quiz.title }}</h1>
+        <div id="quiz-timer" class="badge badge-info">Time Remaining: <span id="timer-display"></span></div>
+    </div>
+    
+    <div class="card mb-4">
+        <p><strong>Duration:</strong> {{ attempt.quiz.duration_minutes }} minutes</p>
+        <p><strong>Total Questions:</strong> {{ questions.count }}</p>
+        <p><strong>Total Marks:</strong> {{ attempt.quiz.max_marks }}</p>
+    </div>
+    
+    <form method="post" id="quiz-form">
+        {% csrf_token %}
+        {% for question in questions %}
+            <div class="quiz-question">
+                <h4>Question {{ question.order }} ({{ question.marks }} marks)</h4>
+                <p>{{ question.question_text }}</p>
+                <div class="quiz-options">
+                    <label class="quiz-option">
+                        <input type="radio" name="question_{{ question.id }}" value="A" required> 
+                        A. {{ question.option_a }}
+                    </label>
+                    <label class="quiz-option">
+                        <input type="radio" name="question_{{ question.id }}" value="B" required> 
+                        B. {{ question.option_b }}
+                    </label>
+                    <label class="quiz-option">
+                        <input type="radio" name="question_{{ question.id }}" value="C" required> 
+                        C. {{ question.option_c }}
+                    </label>
+                    <label class="quiz-option">
+                        <input type="radio" name="question_{{ question.id }}" value="D" required> 
+                        D. {{ question.option_d }}
+                    </label>
+                </div>
+            </div>
+        {% endfor %}
+        
+        <button type="submit" class="btn btn-primary">Submit Quiz</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Start quiz timer
+        const timerDisplay = document.getElementById('timer-display');
+        if (timerDisplay) {
+            // Pass the duration as a JavaScript variable
+            const duration = parseInt('{{ attempt.quiz.duration_minutes|default:30 }}');
+            startQuizTimer(duration, timerDisplay);
+        }
+    });
+</script>
+{% endblock %}

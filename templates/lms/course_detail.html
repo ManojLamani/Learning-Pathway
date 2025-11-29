@@ -1,0 +1,173 @@
+{% extends 'lms/base.html' %}
+
+{% block title %}{{ course.title }} - Learning Pathway LMS{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'home' %}">Home</a>
+    <span class="breadcrumb-separator">›</span>
+    <a href="{% url 'course_list' %}">Courses</a>
+    <span class="breadcrumb-separator">›</span>
+    <span class="breadcrumb-current">{{ course.title }}</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="dashboard-header">
+        <h1>{{ course.title }}</h1>
+        {% if user.role == 'instructor' and course.instructor == user %}
+            <div>
+                <a href="{% url 'course_edit' course.id %}" class="btn btn-secondary">Edit Course</a>
+                <a href="{% url 'course_delete' course.id %}" class="btn btn-danger" onclick="return confirmDelete()">Delete Course</a>
+            </div>
+        {% elif user.role == 'student' and enrolled %}
+            <span class="badge badge-success" style="font-size: 1rem; padding: 0.5rem 1rem;">✓ Enrolled</span>
+        {% elif user.role == 'student' %}
+            <a href="{% url 'enroll_course' course.id %}" class="btn btn-primary" style="font-size: 1.1rem; padding: 0.875rem 2rem;">Enroll Now</a>
+        {% endif %}
+    </div>
+    
+    <!-- Enrollment Banner for Students -->
+    {% if user.role == 'student' and not enrolled %}
+    <div style="background: linear-gradient(135deg, var(--primary-color), var(--accent-color)); color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem; text-align: center;">
+        <h2 style="color: white; margin-bottom: 1rem;">Ready to Start Learning?</h2>
+        <p style="font-size: 1.1rem; margin-bottom: 1.5rem; opacity: 0.95;">Enroll in this course to access all modules, assignments, and quizzes!</p>
+        <a href="{% url 'enroll_course' course.id %}" class="btn" style="background-color: white; color: var(--primary-color); font-weight: 700; padding: 1rem 2.5rem; font-size: 1.1rem;">Enroll in This Course</a>
+    </div>
+    {% endif %}
+    
+    <div class="card" style="margin-bottom: 2rem;">
+        <h3 style="margin-bottom: 1rem;">About This Course</h3>
+        <p style="font-size: 1.05rem; line-height: 1.7;">{{ course.description }}</p>
+        {% if course.thumbnail %}
+            <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}" style="width: 100%; border-radius: 12px; margin-top: 1rem;">
+        {% endif %}
+        <div style="display: flex; gap: 2rem; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
+            <div>
+                <strong style="color: var(--text-muted); font-size: 0.875rem;">Instructor</strong>
+                <p style="margin-top: 0.25rem;">{{ course.instructor.get_full_name|default:course.instructor.username }}</p>
+            </div>
+            <div>
+                <strong style="color: var(--text-muted); font-size: 0.875rem;">Created</strong>
+                <p style="margin-top: 0.25rem;">{{ course.created_at|date:"M d, Y" }}</p>
+            </div>
+            <div>
+                <strong style="color: var(--text-muted); font-size: 0.875rem;">Modules</strong>
+                <p style="margin-top: 0.25rem;">{{ modules.count }}</p>
+            </div>
+            <div>
+                <strong style="color: var(--text-muted); font-size: 0.875rem;">Assignments</strong>
+                <p style="margin-top: 0.25rem;">{{ assignments.count }}</p>
+            </div>
+        </div>
+    </div>
+    
+    {% if user.role == 'instructor' and course.instructor == user %}
+        <div class="mb-4">
+            <a href="{% url 'module_create' course.id %}" class="btn btn-primary">Add Module</a>
+            <a href="{% url 'assignment_create' course.id %}" class="btn btn-secondary">Add Assignment</a>
+            <a href="{% url 'quiz_create' course.id %}" class="btn btn-secondary">Add Quiz</a>
+        </div>
+    {% endif %}
+    
+    {% if modules %}
+        <h2>Course Modules</h2>
+        <div class="module-list">
+            {% for module in modules %}
+                <div class="module-item">
+                    <div class="module-header">
+                        <h3>{{ module.title }}</h3>
+                        {% if user.role == 'instructor' and course.instructor == user %}
+                            <div>
+                                <a href="{% url 'module_edit' module.id %}" class="btn btn-sm btn-secondary">Edit</a>
+                                <a href="{% url 'module_delete' module.id %}" class="btn btn-sm btn-danger" onclick="return confirmDelete()">Delete</a>
+                                <a href="{% url 'lesson_create' module.id %}" class="btn btn-sm btn-secondary">Add Lesson</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <p>{{ module.description }}</p>
+                    
+                    {% if module.lessons.all %}
+                        <div class="lesson-list">
+                            {% for lesson in module.lessons.all %}
+                                <div class="lesson-item">
+                                    <a href="{% url 'lesson_detail' lesson.id %}">{{ lesson.title }}</a>
+                                    {% if user.role == 'instructor' and course.instructor == user %}
+                                        <div class="float-right">
+                                            <a href="{% url 'lesson_edit' lesson.id %}" class="btn btn-sm btn-secondary">Edit</a>
+                                            <a href="{% url 'lesson_delete' lesson.id %}" class="btn btn-sm btn-danger" onclick="return confirmDelete()">Delete</a>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    {% if assignments %}
+        <h2 class="mt-4">Assignments</h2>
+        <div class="card-grid">
+            {% for assignment in assignments %}
+                <div class="card">
+                    <h3>{{ assignment.title }}</h3>
+                    <p>{{ assignment.description|truncatewords:15 }}</p>
+                    <p><small>Due: {{ assignment.due_date|date:"M d, Y" }}</small></p>
+                    <p><small>Max Marks: {{ assignment.max_marks }}</small></p>
+                    <div class="card-actions">
+                        <a href="{% url 'assignment_detail' assignment.id %}" class="btn btn-primary btn-sm">View Details</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    {% if quizzes %}
+        <h2 class="mt-4">Quizzes</h2>
+        <div class="card-grid">
+            {% for quiz in quizzes %}
+                <div class="card">
+                    <h3>{{ quiz.title }}</h3>
+                    <p>{{ quiz.description|truncatewords:15 }}</p>
+                    <p><small>Duration: {{ quiz.duration_minutes }} minutes</small></p>
+                    <p><small>Pass Marks: {{ quiz.pass_marks }}/{{ quiz.max_marks }}</small></p>
+                    <div class="card-actions">
+                        <a href="{% url 'quiz_detail' quiz.id %}" class="btn btn-primary btn-sm">View Details</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    {% if user.role == 'instructor' and course.instructor == user and enrollments %}
+        <h2 class="mt-4">Student Enrollments</h2>
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Enrolled Date</th>
+                        <th>Progress</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for enrollment in enrollments %}
+                        <tr>
+                            <td>{{ enrollment.student.get_full_name|default:enrollment.student.username }}</td>
+                            <td>{{ enrollment.enrolled_at|date:"M d, Y" }}</td>
+                            <td>{{ enrollment.progress }}%</td>
+                            <td>
+                                <a href="{% url 'award_badge' enrollment.student.id course.id %}" class="btn btn-sm btn-secondary">Award Badge</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

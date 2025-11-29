@@ -1,0 +1,71 @@
+{% extends 'lms/base.html' %}
+
+{% block title %}Quiz Result - Learning Pathway LMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="dashboard-header">
+        <h1>{{ attempt.quiz.title }} - Result</h1>
+        <a href="{% url 'quiz_detail' attempt.quiz.id %}" class="btn btn-secondary">Back to Quiz</a>
+    </div>
+    
+    <div class="card mb-4">
+        <h3>Quiz Summary</h3>
+        <p><strong>Student:</strong> {{ attempt.student.get_full_name|default:attempt.student.username }}</p>
+        <p><strong>Submitted At:</strong> {{ attempt.submitted_at|date:"M d, Y H:i" }}</p>
+        <p><strong>Score:</strong> <span class="badge badge-{% if attempt.score >= attempt.quiz.pass_marks %}success{% else %}danger{% endif %}">{{ attempt.score }}/{{ attempt.quiz.max_marks }}</span></p>
+        <p><strong>Status:</strong> 
+            {% if attempt.score >= attempt.quiz.pass_marks %}
+                <span class="badge badge-success">Passed</span>
+            {% else %}
+                <span class="badge badge-danger">Failed</span>
+            {% endif %}
+        </p>
+    </div>
+    
+    <h2>Your Answers</h2>
+    {% for answer in answers %}
+        <div class="quiz-question">
+            <h4>Question {{ answer.question.order }} ({{ answer.question.marks }} marks)</h4>
+            <p>{{ answer.question.question_text }}</p>
+            <div class="quiz-options">
+                <div class="quiz-option {% if answer.question.correct_answer == 'A' %}correct-answer{% endif %} {% if answer.selected_answer == 'A' %}selected-answer{% endif %}">
+                    A. {{ answer.question.option_a }}
+                </div>
+                <div class="quiz-option {% if answer.question.correct_answer == 'B' %}correct-answer{% endif %} {% if answer.selected_answer == 'B' %}selected-answer{% endif %}">
+                    B. {{ answer.question.option_b }}
+                </div>
+                <div class="quiz-option {% if answer.question.correct_answer == 'C' %}correct-answer{% endif %} {% if answer.selected_answer == 'C' %}selected-answer{% endif %}">
+                    C. {{ answer.question.option_c }}
+                </div>
+                <div class="quiz-option {% if answer.question.correct_answer == 'D' %}correct-answer{% endif %} {% if answer.selected_answer == 'D' %}selected-answer{% endif %}">
+                    D. {{ answer.question.option_d }}
+                </div>
+            </div>
+            <p>
+                <strong>Your Answer:</strong> {{ answer.get_selected_answer_display }} 
+                {% if answer.is_correct %}
+                    <span class="badge badge-success">Correct</span>
+                {% else %}
+                    <span class="badge badge-danger">Incorrect</span>
+                {% endif %}
+            </p>
+            <p><strong>Correct Answer:</strong> {{ answer.question.get_correct_answer_display }}</p>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .correct-answer {
+        border-color: var(--success-color) !important;
+        background-color: rgba(16, 185, 129, 0.1) !important;
+    }
+    
+    .selected-answer {
+        border-color: var(--primary-color) !important;
+        background-color: rgba(91, 95, 255, 0.1) !important;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends 'lms/base.html' %}
+
+{% block title %}{% if module %}Edit Module{% else %}Create Module{% endif %} - Learning Pathway LMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="form-container">
+        <div class="form-card">
+            <h2>{% if module %}Edit Module{% else %}Create New Module{% endif %}</h2>
+            <h3>Course: {{ course.title }}</h3>
+            
+            <form method="post" id="module-form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="{{ form.title.id_for_label }}">Title *</label>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                        <div class="alert alert-error">{{ form.title.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.description.id_for_label }}">Description *</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                        <div class="alert alert-error">{{ form.description.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.order.id_for_label }}">Order</label>
+                    {{ form.order }}
+                    {% if form.order.errors %}
+                        <div class="alert alert-error">{{ form.order.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <button type="submit" class="btn btn-primary" onclick="validateForm('module-form')">{% if module %}Update Module{% else %}Create Module{% endif %}</button>
+                <a href="{% url 'course_detail' course.id %}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        validateForm('module-form');
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends 'lms/base.html' %}
+
+{% block title %}{{ assignment.title }} - Learning Pathway LMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="dashboard-header">
+        <h1>{{ assignment.title }}</h1>
+        {% if user.role == 'instructor' and assignment.course.instructor == user %}
+            <div>
+                <a href="{% url 'assignment_edit' assignment.id %}" class="btn btn-secondary">Edit Assignment</a>
+                <a href="{% url 'assignment_delete' assignment.id %}" class="btn btn-danger" onclick="return confirmDelete()">Delete Assignment</a>
+            </div>
+        {% endif %}
+    </div>
+    
+    <div class="card mb-4">
+        <p>{{ assignment.description }}</p>
+        <p><strong>Course:</strong> <a href="{% url 'course_detail' assignment.course.id %}">{{ assignment.course.title }}</a></p>
+        <p><strong>Due Date:</strong> {{ assignment.due_date|date:"M d, Y" }}</p>
+        <p><strong>Maximum Marks:</strong> {{ assignment.max_marks }}</p>
+        {% if assignment.attachment %}
+            <p><strong>Attachment:</strong> <a href="{{ assignment.attachment.url }}" target="_blank">Download File</a></p>
+        {% endif %}
+    </div>
+    
+    {% if user.role == 'student' %}
+        {% if submission %}
+            <div class="card mb-4">
+                <h3>Your Submission</h3>
+                {% if submission.text_answer %}
+                    <p><strong>Text Answer:</strong></p>
+                    <p>{{ submission.text_answer }}</p>
+                {% endif %}
+                {% if submission.file_submission %}
+                    <p><strong>File Submission:</strong> <a href="{{ submission.file_submission.url }}" target="_blank">Download File</a></p>
+                {% endif %}
+                <p><strong>Submitted At:</strong> {{ submission.submitted_at|date:"M d, Y H:i" }}</p>
+                
+                {% if submission.marks is not None %}
+                    <hr>
+                    <h4>Graded</h4>
+                    <p><strong>Marks Obtained:</strong> {{ submission.marks }}/{{ assignment.max_marks }}</p>
+                    {% if submission.feedback %}
+                        <p><strong>Feedback:</strong> {{ submission.feedback }}</p>
+                    {% endif %}
+                    <p><strong>Graded At:</strong> {{ submission.graded_at|date:"M d, Y H:i" }}</p>
+                {% else %}
+                    <p class="badge badge-warning">Pending Review</p>
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="card mb-4">
+                <h3>Submit Assignment</h3>
+                <a href="{% url 'assignment_submit' assignment.id %}" class="btn btn-primary">Submit Now</a>
+            </div>
+        {% endif %}
+    {% elif user.role == 'instructor' and assignment.course.instructor == user %}
+        <h2>Student Submissions</h2>
+        {% if submissions %}
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Submitted At</th>
+                            <th>Status</th>
+                            <th>Marks</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for submission in submissions %}
+                            <tr>
+                                <td>{{ submission.student.get_full_name|default:submission.student.username }}</td>
+                                <td>{{ submission.submitted_at|date:"M d, Y H:i" }}</td>
+                                <td>
+                                    {% if submission.marks is not None %}
+                                        <span class="badge badge-success">Graded</span>
+                                    {% else %}
+                                        <span class="badge badge-warning">Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if submission.marks is not None %}
+                                        {{ submission.marks }}/{{ assignment.max_marks }}
+                                    {% else %}
+                                        Not graded
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'assignment_grade' submission.id %}" class="btn btn-sm btn-primary">
+                                        {% if submission.marks is not None %}Re-grade{% else %}Grade{% endif %}
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p>No submissions yet.</p>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends 'lms/base.html' %}
+
+{% block title %}Sign in - Learning Pathway{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-left" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.95), rgba(139, 92, 246, 0.95)), url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'); background-size: cover; background-position: center;">
+        <div class="form-left-content">
+            <div class="feature-icon" style="font-size: 4rem; margin-bottom: 1.5rem;">🔒</div>
+            <h2>Your data, your rules</h2>
+            <p>Secure your learning journey with enterprise-grade security and privacy controls.</p>
+        </div>
+    </div>
+    
+    <div class="form-right">
+        <div class="form-card">
+            <div class="form-header">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h2>Sign in</h2>
+                    <a href="{% url 'register' %}" style="color: var(--primary-color); text-decoration: none; font-size: 0.9rem; font-weight: 600;">Create account</a>
+                </div>
+                <p>Access your learning dashboard</p>
+            </div>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+            
+            <form method="post" id="login-form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="username">Username or Email</label>
+                    <input type="text" name="username" id="username" placeholder="Enter your username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" name="password" id="password" placeholder="••••••••" required>
+                    <div class="form-link">
+                        <a href="{% url 'password_reset' %}">Forgot password?</a>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Sign in</button>
+            </form>
+            
+            <div class="form-footer">
+                <p>New here? <a href="{% url 'register' %}">Sign up</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+body {
+    margin: 0;
+    padding: 0;
+}
+
+.navbar {
+    position: absolute;
+    width: 100%;
+    background-color: transparent;
+    border-bottom: none;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+{% endblock %}

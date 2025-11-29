@@ -1,0 +1,56 @@
+{% extends 'lms/base.html' %}
+
+{% block title %}Grade Assignment - Learning Pathway LMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="form-container">
+        <div class="form-card">
+            <h2>Grade Assignment</h2>
+            <h3>{{ assignment.title }}</h3>
+            <p>Student: {{ submission.student.get_full_name|default:submission.student.username }}</p>
+            
+            <div class="card mb-4">
+                <h4>Student Submission</h4>
+                {% if submission.text_answer %}
+                    <p><strong>Text Answer:</strong></p>
+                    <p>{{ submission.text_answer }}</p>
+                {% endif %}
+                {% if submission.file_submission %}
+                    <p><strong>File Submission:</strong> <a href="{{ submission.file_submission.url }}" target="_blank">Download File</a></p>
+                {% endif %}
+            </div>
+            
+            <form method="post" id="grading-form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="{{ form.marks.id_for_label }}">Marks *</label>
+                    {{ form.marks }}
+                    {% if form.marks.errors %}
+                        <div class="alert alert-error">{{ form.marks.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.feedback.id_for_label }}">Feedback</label>
+                    {{ form.feedback }}
+                    {% if form.feedback.errors %}
+                        <div class="alert alert-error">{{ form.feedback.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <button type="submit" class="btn btn-primary" onclick="validateForm('grading-form')">Save Grade</button>
+                <a href="{% url 'assignment_detail' assignment.id %}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        validateForm('grading-form');
+    });
+</script>
+{% endblock %}
