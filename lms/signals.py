@@ -58,8 +58,11 @@ from .models import AssignmentSubmission, QuizAttempt
 
 @receiver(post_save, sender=AssignmentSubmission)
 def update_progress_on_assignment(sender, instance, **kwargs):
-    """Update course progress when assignment is graded"""
+    """Update course progress and award badges when assignment is graded"""
     if instance.marks is not None:
+        from .models import Badge, StudentBadge
+        
+        # Update course progress
         enrollment = Enrollment.objects.filter(
             student=instance.student,
             course=instance.assignment.course
@@ -67,29 +70,57 @@ def update_progress_on_assignment(sender, instance, **kwargs):
         if enrollment:
             enrollment.update_progress()
         
+        # Award badge for completing assignment (any score)
+        completion_badge = Badge.objects.filter(
+            badge_type='assignment_ace',
+            name='Assignment Completed'
+        ).first()
+        
+        if not completion_badge:
+            completion_badge = Badge.objects.create(
+                name='Assignment Completed',
+                badge_type='assignment_ace',
+                description='Completed an assignment',
+                icon='✅'
+            )
+        
+        StudentBadge.objects.get_or_create(
+            student=instance.student,
+            badge=completion_badge,
+            course=instance.assignment.course,
+            defaults={'is_instructor_awarded': False}
+        )
+        
         # Auto-award Assignment Ace badge for 90%+ score
         percentage = (instance.marks / instance.assignment.max_marks) * 100
         if percentage >= 90:
-            from .models import Badge, StudentBadge
-            badge, _ = Badge.objects.get_or_create(
+            ace_badge = Badge.objects.filter(
                 badge_type='assignment_ace',
-                defaults={
-                    'name': 'Assignment Ace',
-                    'description': 'Scored 90%+ on assignment',
-                    'icon': '📝'
-                }
-            )
+                name='Assignment Ace'
+            ).first()
+            
+            if not ace_badge:
+                ace_badge = Badge.objects.create(
+                    name='Assignment Ace',
+                    badge_type='assignment_ace',
+                    description='Scored 90%+ on assignment',
+                    icon='📝'
+                )
+            
             StudentBadge.objects.get_or_create(
                 student=instance.student,
-                badge=badge,
+                badge=ace_badge,
                 course=instance.assignment.course,
                 defaults={'is_instructor_awarded': False}
             )
 
 @receiver(post_save, sender=QuizAttempt)
 def update_progress_on_quiz(sender, instance, **kwargs):
-    """Update course progress when quiz is completed"""
+    """Update course progress and award badges when quiz is completed"""
     if instance.is_completed:
+        from .models import Badge, StudentBadge
+        
+        # Update course progress
         enrollment = Enrollment.objects.filter(
             student=instance.student,
             course=instance.quiz.course
@@ -97,39 +128,69 @@ def update_progress_on_quiz(sender, instance, **kwargs):
         if enrollment:
             enrollment.update_progress()
         
+        # Award badge for completing quiz (any score)
+        completion_badge = Badge.objects.filter(
+            badge_type='quiz_master',
+            name='Quiz Completed'
+        ).first()
+        
+        if not completion_badge:
+            completion_badge = Badge.objects.create(
+                name='Quiz Completed',
+                badge_type='quiz_master',
+                description='Completed a quiz',
+                icon='✅'
+            )
+        
+        StudentBadge.objects.get_or_create(
+            student=instance.student,
+            badge=completion_badge,
+            course=instance.quiz.course,
+            defaults={'is_instructor_awarded': False}
+        )
+        
         # Auto-award Quiz Master badge for 90%+ score
         if instance.score and instance.quiz.max_marks:
             percentage = (instance.score / instance.quiz.max_marks) * 100
             if percentage >= 90:
-                from .models import Badge, StudentBadge
-                badge, _ = Badge.objects.get_or_create(
+                master_badge = Badge.objects.filter(
                     badge_type='quiz_master',
-                    defaults={
-                        'name': 'Quiz Master',
-                        'description': 'Scored 90%+ on quiz',
-                        'icon': '🧠'
-                    }
-                )
+                    name='Quiz Master'
+                ).first()
+                
+                if not master_badge:
+                    master_badge = Badge.objects.create(
+                        name='Quiz Master',
+                        badge_type='quiz_master',
+                        description='Scored 90%+ on quiz',
+                        icon='🧠'
+                    )
+                
                 StudentBadge.objects.get_or_create(
                     student=instance.student,
-                    badge=badge,
+                    badge=master_badge,
                     course=instance.quiz.course,
                     defaults={'is_instructor_awarded': False}
                 )
             
             # Auto-award Perfect Score badge for 100%
             if percentage == 100:
-                badge, _ = Badge.objects.get_or_create(
+                perfect_badge = Badge.objects.filter(
                     badge_type='perfect_score',
-                    defaults={
-                        'name': 'Perfect Score',
-                        'description': 'Achieved 100% score',
-                        'icon': '💯'
-                    }
-                )
+                    name='Perfect Score'
+                ).first()
+                
+                if not perfect_badge:
+                    perfect_badge = Badge.objects.create(
+                        name='Perfect Score',
+                        badge_type='perfect_score',
+                        description='Achieved 100% score',
+                        icon='💯'
+                    )
+                
                 StudentBadge.objects.get_or_create(
                     student=instance.student,
-                    badge=badge,
+                    badge=perfect_badge,
                     course=instance.quiz.course,
                     defaults={'is_instructor_awarded': False}
                 )

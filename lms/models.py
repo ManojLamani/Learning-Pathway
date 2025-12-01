@@ -39,29 +39,12 @@ class Enrollment(models.Model):
         return f"{self.student.username} - {self.course.title}"
     
     def update_progress(self):
-        """Calculate and update course progress based on completed items"""
+        """Calculate and update course progress based on completed items (assignments and quizzes only)"""
         course = self.course
         student = self.student
         
-        # Get all modules in course
-        modules = course.modules.all()
-        if not modules.exists():
-            self.progress = 0
-            self.save()
-            return 0
-        
         total_items = 0
         completed_items = 0
-        
-        # Count lessons
-        for module in modules:
-            lessons = module.lessons.all()
-            total_items += lessons.count()
-            completed_items += LessonProgress.objects.filter(
-                student=student,
-                lesson__in=lessons,
-                is_completed=True
-            ).count()
         
         # Count assignments
         assignments = course.assignments.all()
@@ -96,11 +79,11 @@ class Enrollment(models.Model):
     
     def _award_course_completion_badge(self):
         """Award course completion badge"""
-        badge, created = Badge.objects.get_or_create(
+        badge, _ = Badge.objects.get_or_create(
             badge_type='course_complete',
             defaults={
                 'name': 'Course Completion',
-                'description': f'Completed {self.course.title}',
+                'description': 'Completed all assignments and quizzes',
                 'icon': '🎓'
             }
         )
@@ -376,39 +359,8 @@ class ModuleProgress(models.Model):
             if not self.is_completed:
                 self.is_completed = True
                 self.completed_at = timezone.now()
-                self.save()
-                # Award badge automatically
-                self.award_module_badge()
-        else:
-            self.save()
-    
-    def award_module_badge(self):
-        """Automatically award badge when module is completed"""
-        from django.db.models.signals import post_save
-        # Create or get module completion badge
-        badge, created = Badge.objects.get_or_create(
-            badge_type='module_complete',
-            defaults={
-                'name': f'{self.module.title} Completion',
-                'description': f'Completed all lessons in {self.module.title}',
-                'icon': '🎓'
-            }
-        )
         
-        # Award badge if not already awarded
-        StudentBadge.objects.get_or_create(
-            student=self.student,
-            badge=badge,
-            module=self.module,
-            course=self.module.course,
-            defaults={
-                'is_instructor_awarded': False
-            }
-        )
-        
-        # Update student profile stats
-        if hasattr(self.student, 'student_profile'):
-            self.student.student_profile.update_stats()
+        self.save()
 
 class Discussion(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='discussions')
