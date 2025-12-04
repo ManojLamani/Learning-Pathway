@@ -126,7 +126,7 @@ class Assignment(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
     attachment = models.FileField(upload_to='assignment_files/', null=True, blank=True)
-    due_date = models.DateTimeField()
+    due_date = models.DateField()  # Changed from DateTimeField to DateField
     max_marks = models.IntegerField(default=100)
     created_at = models.DateTimeField(auto_now_add=True)
     

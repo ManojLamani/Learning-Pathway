@@ -1,63 +1,4 @@
-// Theme Selector Functionality - Multiple Themes
-document.addEventListener('DOMContentLoaded', function() {
-    const themeToggle = document.getElementById('theme-toggle');
-    const themeDropdown = document.getElementById('theme-dropdown');
-    const html = document.documentElement;
-    
-    // Check if elements exist
-    if (!themeToggle || !themeDropdown) {
-        console.log('Theme selector elements not found');
-        return;
-    }
-    
-    // Load saved theme from localStorage
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    html.setAttribute('data-theme', savedTheme);
-    
-    // Toggle dropdown
-    themeToggle.addEventListener('click', function(e) {
-        e.stopPropagation();
-        themeDropdown.classList.toggle('show');
-    });
-    
-    // Close dropdown when clicking outside
-    document.addEventListener('click', function(e) {
-        if (!e.target.closest('.theme-selector')) {
-            themeDropdown.classList.remove('show');
-        }
-    });
-    
-    // Theme selection
-    const themeButtons = themeDropdown.querySelectorAll('button[data-theme]');
-    
-    themeButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const newTheme = this.getAttribute('data-theme');
-            
-            // Add transition effect
-            html.style.transition = 'background-color 0.3s ease, color 0.3s ease';
-            html.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            updateActiveTheme(newTheme);
-            
-            // Close dropdown
-            themeDropdown.classList.remove('show');
-        });
-    });
-    
-    function updateActiveTheme(theme) {
-        themeButtons.forEach(button => {
-            if (button.getAttribute('data-theme') === theme) {
-                button.classList.add('active');
-            } else {
-                button.classList.remove('active');
-            }
-        });
-    }
-    
-    // Initialize active theme
-    updateActiveTheme(savedTheme);
-});
+// Main JavaScript File for LMS
 
 // Auto-dismiss messages after 5 seconds with smooth animation
 document.addEventListener('DOMContentLoaded', function() {
@@ -166,7 +107,6 @@ function filterCourses() {
 document.addEventListener('DOMContentLoaded', function() {
     filterCourses();
 });
-
 
 // Password strength indicator for registration
 document.addEventListener('DOMContentLoaded', function() {

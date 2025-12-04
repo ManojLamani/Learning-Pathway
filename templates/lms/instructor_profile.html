@@ -15,13 +15,6 @@
 {% block content %}
 <div class="container">
     <div class="profile-header">
-        <div class="profile-avatar">
-            {% if instructor.profile_picture %}
-                <img src="{{ instructor.profile_picture.url }}" alt="{{ instructor.username }}">
-            {% else %}
-                <div class="avatar-placeholder instructor">{{ instructor.username.0|upper }}</div>
-            {% endif %}
-        </div>
         <div class="profile-info">
             <h1>{{ instructor.get_full_name|default:instructor.username }}</h1>
             <p class="profile-role">👨‍🏫 Instructor</p>
@@ -42,16 +35,6 @@
             <div class="stat-icon">👥</div>
             <div class="stat-value">{{ profile.total_students }}</div>
             <div class="stat-label">Total Students</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon">🏆</div>
-            <div class="stat-value">{{ profile.total_badges_awarded }}</div>
-            <div class="stat-label">Badges Awarded</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon">⭐</div>
-            <div class="stat-value">{{ profile.rating|floatformat:1 }}</div>
-            <div class="stat-label">Rating</div>
         </div>
     </div>
 

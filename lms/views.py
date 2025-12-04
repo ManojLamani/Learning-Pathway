@@ -363,8 +363,8 @@ def student_profile(request, user_id=None):
     
     # Get or create profile
     profile, created = StudentProfile.objects.get_or_create(user=student)
-    if created:
-        profile.update_stats()
+    # Always update stats to show current data
+    profile.update_stats()
     
     # Get enrolled courses
     enrollments = Enrollment.objects.filter(student=student).select_related('course')
@@ -408,8 +408,8 @@ def instructor_profile(request, user_id=None):
     
     # Get or create profile
     profile, created = InstructorProfile.objects.get_or_create(user=instructor)
-    if created:
-        profile.update_stats()
+    # Always update stats to show current data
+    profile.update_stats()
     
     # Get created courses
     courses = Course.objects.filter(instructor=instructor)

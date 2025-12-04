@@ -106,9 +106,14 @@ class LessonForm(forms.ModelForm):
             self.fields[field].widget.attrs.update({'class': 'form-input'})
 
 class AssignmentForm(forms.ModelForm):
-    due_date = forms.DateTimeField(
-        widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-        input_formats=['%Y-%m-%dT%H:%M']
+    due_date = forms.DateField(
+        widget=forms.DateInput(attrs={
+            'type': 'date',
+            'class': 'form-input',
+            'id': 'due_date_input'
+        }),
+        input_formats=['%Y-%m-%d'],
+        help_text='Assignment due date (cannot be in the past)'
     )
     
     class Meta:
@@ -123,6 +128,25 @@ class AssignmentForm(forms.ModelForm):
         for field in self.fields:
             if field != 'attachment':
                 self.fields[field].widget.attrs.update({'class': 'form-input'})
+    
+    def clean_due_date(self):
+        """Validate that due date is not in the past"""
+        from django.utils import timezone
+        from datetime import datetime
+        
+        due_date = self.cleaned_data.get('due_date')
+        if due_date:
+            # Convert date to datetime for comparison
+            due_datetime = datetime.combine(due_date, datetime.min.time())
+            due_datetime = timezone.make_aware(due_datetime)
+            
+            # Get current date (start of today)
+            today = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+            
+            if due_datetime < today:
+                raise forms.ValidationError('Due date cannot be in the past. Please select today or a future date.')
+        
+        return due_date
 
 class AssignmentSubmissionForm(forms.ModelForm):
     class Meta:

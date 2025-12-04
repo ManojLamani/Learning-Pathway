@@ -36,9 +36,15 @@
                 <div class="form-group">
                     <label for="{{ form.due_date.id_for_label }}">Due Date *</label>
                     {{ form.due_date }}
+                    <div class="date-quick-buttons" style="margin-top: 10px;">
+                        <button type="button" class="btn-quick-date" onclick="setDueDate('today')">Today</button>
+                        <button type="button" class="btn-quick-date" onclick="setDueDate('tomorrow')">Tomorrow</button>
+                        <button type="button" class="btn-quick-date" onclick="setDueDate('nextweek')">Next Week</button>
+                    </div>
                     {% if form.due_date.errors %}
                         <div class="alert alert-error">{{ form.due_date.errors }}</div>
                     {% endif %}
+                    <small class="form-help">Cannot select past dates</small>
                 </div>
                 
                 <div class="form-group">
@@ -61,6 +67,85 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         validateForm('assignment-form');
+        
+        // Set minimum date to today
+        const dueDateInput = document.getElementById('due_date_input');
+        if (dueDateInput) {
+            const today = new Date().toISOString().split('T')[0];
+            dueDateInput.setAttribute('min', today);
+        }
     });
+    
+    // Function to set due date based on quick buttons
+    function setDueDate(option) {
+        const dueDateInput = document.getElementById('due_date_input');
+        if (!dueDateInput) return;
+        
+        const today = new Date();
+        let targetDate = new Date();
+        
+        switch(option) {
+            case 'today':
+                targetDate = today;
+                break;
+            case 'tomorrow':
+                targetDate.setDate(today.getDate() + 1);
+                break;
+            case 'nextweek':
+                targetDate.setDate(today.getDate() + 7);
+                break;
+        }
+        
+        // Format date as YYYY-MM-DD
+        const year = targetDate.getFullYear();
+        const month = String(targetDate.getMonth() + 1).padStart(2, '0');
+        const day = String(targetDate.getDate()).padStart(2, '0');
+        const formattedDate = `${year}-${month}-${day}`;
+        
+        dueDateInput.value = formattedDate;
+        
+        // Trigger change event for validation
+        dueDateInput.dispatchEvent(new Event('change'));
+    }
 </script>
+
+<style>
+    .date-quick-buttons {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .btn-quick-date {
+        padding: 8px 16px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .btn-quick-date:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    }
+    
+    .btn-quick-date:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .form-help {
+        display: block;
+        margin-top: 5px;
+        color: #666;
+        font-size: 13px;
+        font-style: italic;
+    }
+</style>
 {% endblock %}
